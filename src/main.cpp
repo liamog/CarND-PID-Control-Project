@@ -33,15 +33,18 @@ std::string hasData(std::string s) {
 int main() {
   uWS::Hub h;
 
-  PID pid_steering;
-  pid_steering.Init(/*p=*/0.3, /*i=*/0.001, /*d=*/12.0);
+  PID pid_steering("Steering");
+  pid_steering.SetControlParams(/*p=*/0.3, /*i=*/0.001, /*d=*/12.0);
+  pid_steering.EnableTwiddle();
 
-  PID pid_speed;
-  pid_speed.Init(/*p=*/0.4, /*i=*/0.0, /*d=*/5.0);
+  PID pid_speed("Speed");
+  pid_speed.SetControlParams(/*p=*/0.4, /*i=*/0.0, /*d=*/5.0);
 
   double target_speed = 30.00;
 
-  h.onMessage([&pid_steering, &pid_speed, target_speed](
+  int count = 0;
+
+  h.onMessage([&](
       uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
       uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -57,6 +60,7 @@ int main() {
           double cte = std::stod(j[1]["cte"].get<std::string>());
           double speed = std::stod(j[1]["speed"].get<std::string>());
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
+          count++;
           pid_steering.UpdateError(cte);
           double pid_error = pid_steering.TotalError();
 
@@ -72,10 +76,13 @@ int main() {
           throttle = std::max<double>(throttle, -0.3);
 
           // DEBUG
-          std::cout << "\rCTE: " << cte << " Steering Value: " << steer_value
-                    << " Incoming Angle: " << angle
-                    << " Pid Error: " << pid_error
-                    << "\r";
+          // std::cout << "\r(" << count
+          //           << ")CTE: " << cte
+          //           << " Steering Value: " << steer_value
+          //           << " Incoming Angle: " << angle
+          //           << " Pid Error: " << pid_error
+          //           << " Avg Pid Error: " << pid_steering.best_error()
+          //           << "\r";
 
           json msgJson;
           msgJson["steering_angle"] = steer_value;
