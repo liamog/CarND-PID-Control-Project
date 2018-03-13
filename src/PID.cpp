@@ -53,42 +53,62 @@ void PID::TwiddleParams() {
       std::accumulate(dp_.begin(), dp_.end(), 0.0);
   // This function will be called once or twice for each current_parameter_
   // iteration. Depending on if there is an improvement.
+  std::cout << ">>>>>>>> TwiddleParams - start" << std::endl;
   DebugPrint();
+  std::cout << "---------------------" << std::endl;
 
-  std::cout << "TwiddleParams" << std::endl;
-  if (current_tolerance_ < tolerance_threshold_) {
+  if (indexes.empty()) {
     // No adjustment required.
     std::cout << "No adjustment required" << std::endl;
+  }
+
+  current_parameter_ = indexes.pop_front();
+  if (dp_[current_parameter_] < tolerance_threshold_)
+  if( best_quadratic_error_ ==  std::numeric_limits<double>::infinity()) {
+    best_quadratic_error_ = sample_quadratic_error_;
+    // baseline error. So attempt the first
     return;
   }
 
-  if (sample_quadratic_error_ < best_error_) {
-    // Improvement
-    std::cout << current_parameter_ << ":Improvement " << current_parameter_
+
+  if (sample_quadratic_error_ < best_quadratic_error_) {
+    // Improvement - widen the search slightly.
+    std::cout << ":Improvement "
               << std::endl;
-    best_error_ = sample_quadratic_error_;
+    best_quadratic_error_ = sample_quadratic_error_;
     dp_[current_parameter_] *= 1.1;
 
-    first_run_ = true;
-    current_parameter_ = (current_parameter_ + 1) % control_params_.size();
-    control_params_[current_parameter_] += dp_[current_parameter_];
+    if (first_run_) {
+      control_params_[current_parameter_] += dp_[current_parameter_];
+      first_run_ = false;
+    } else {
+      // Move on to next parameter
+      std::cout << "Moving to next parameter";
+      first_run_ = true;
+      current_parameter_ = (current_parameter_ + 1) % control_params_.size();
+      control_params_[current_parameter_] += dp_[current_parameter_];
+    }
   } else {  // No improvement
     if (first_run_) {
       std::cout << current_parameter_ << ":first_run No Improvement"
                 << dp_[current_parameter_] << std::endl;
-
       control_params_[current_parameter_] -= 2.0 * dp_[current_parameter_];
       first_run_ = false;
     } else {
+      // Narrow the search.
       dp_[current_parameter_] *= 0.9;
-
-      std::cout << current_parameter_ << ":second run No Improvement"
+      std::cout << current_parameter_ << ":second run No Improvement - moving on"
                 << std::endl;
+
       current_parameter_ = (current_parameter_ + 1) % control_params_.size();
       first_run_ = true;
       control_params_[current_parameter_] += dp_[current_parameter_];
     }
   }
+  std::cout << "<<<<<<<< TwiddleParams - End" << std::endl;
+  DebugPrint();
+  std::cout << "---------------------" << std::endl;
+
   // Rest the error for the next iteration.
   sample_quadratic_error_ = 0.0;
 }
@@ -97,11 +117,14 @@ void PID::DebugPrint() {
   // clang-format off
   std::cout << name_
             << ",uc:" << update_count_
-            << ",pe:" << p_error_
-            << ",ie:" << i_error_
-            << ",de:" << d_error_
-            << ",te:" << current_error_
-            << ",ci:" << current_parameter_
+            << "," << current_parameter_
+            << ":" << (first_run_ ? "FIR" : "SEC")
+            // << ",pe:" << p_error_
+            // << ",ie:" << i_error_
+            // << ",de:" << d_error_
+            // << ",te:" << current_error_
+            << ",sqe:" << sample_quadratic_error_
+            << ",bqe:" << best_quadratic_error_
             << ",ct:" << current_tolerance_
             << ",p:[" << control_params_[0]
             << "," << control_params_[1]

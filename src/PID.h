@@ -33,7 +33,7 @@ class PID {
   */
   double TotalError();
 
-  double best_error() {return best_error_;}
+  double best_error() {return best_quadratic_error_;}
   void EnableTwiddle() {twiddle_ = true;}
 
   void DebugPrint();
@@ -58,15 +58,16 @@ private:
 
   // Twiddle params
   bool twiddle_ = false;
-  int sample_size_ = 100;
+  int sample_size_ = 1000;
   int update_count_ = 0;
-  double best_error_ = std::numeric_limits<double>::infinity();
+  double best_quadratic_error_ = std::numeric_limits<double>::infinity();
   double sample_quadratic_error_ = 0.0;
   double tolerance_threshold_ = 0.0001;
   double current_tolerance_ = std::numeric_limits<double>::infinity();
-  std::vector<double> dp_ = {0.1, 0.0001, 1.0};
+  std::vector<double> dp_ = {0.1, 0.0, 0.0};
   int current_parameter_ = 0;
   bool first_run_ = true;
+  std::list<int> indexes = {0 , 1, 2}
 };
 
 #endif /* PID_H */
