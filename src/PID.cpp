@@ -23,12 +23,6 @@ void PID::UpdateError(double cte) {
   prev_cte_ = cte;
 
   p_error_ = cte;
-  // std::cout << "cte: " << cte
-  //           << " d_error_: " << d_error_
-  //           << " p_error_: " << p_error_
-  //           << " i_error_: " << i_error_
-  //           << " prev_cte_: " << prev_cte_
-  //           << std::endl;
 }
 
 double PID::TotalError() {
