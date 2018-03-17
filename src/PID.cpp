@@ -60,9 +60,14 @@ void PID::TwiddleParams() {
   if (indexes.empty()) {
     // No adjustment required.
     std::cout << "No adjustment required" << std::endl;
+    return;
   }
 
-  current_parameter_ = indexes.pop_front();
+  if (first_run_) {
+    current_parameter_ = indexes.front();
+    indexes.pop_front();
+  }
+
   if (dp_[current_parameter_] < tolerance_threshold_)
   if( best_quadratic_error_ ==  std::numeric_limits<double>::infinity()) {
     best_quadratic_error_ = sample_quadratic_error_;
@@ -85,7 +90,8 @@ void PID::TwiddleParams() {
       // Move on to next parameter
       std::cout << "Moving to next parameter";
       first_run_ = true;
-      current_parameter_ = (current_parameter_ + 1) % control_params_.size();
+      indexes.push_back(current_parameter_);
+
       control_params_[current_parameter_] += dp_[current_parameter_];
     }
   } else {  // No improvement
@@ -110,8 +116,10 @@ void PID::TwiddleParams() {
   std::cout << "---------------------" << std::endl;
 
   // Rest the error for the next iteration.
+
   sample_quadratic_error_ = 0.0;
 }
+
 void PID::DebugPrint() {
   std::cout.setf(std::ios_base::fixed);
   // clang-format off
