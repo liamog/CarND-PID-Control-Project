@@ -59,15 +59,18 @@ void PID::CalculateError() {
 
   if (twiddle_ && sample_count == 0) {
     // Adjust the control parameters looking for an improvement.
+
+    std::cout << "TwiddleParams" << std::endl;
+    DebugPrint();
+    std::cout << "---------------------" << std::endl;
     TwiddleParams();
+    std::cout << "After Twiddle ---------------------" << std::endl;
+    DebugPrint();
+    std::cout << "---------------------" << std::endl << std::endl;
   }
 }
 
 void PID::TwiddleParams() {
-  std::cout << ">>>>>>>> TwiddleParams - start" << std::endl;
-  DebugPrint();
-  std::cout << "---------------------" << std::endl;
-
   if (best_quadratic_error_ == std::numeric_limits<double>::infinity()) {
     best_quadratic_error_ = sample_quadratic_error_;
   }
@@ -75,19 +78,25 @@ void PID::TwiddleParams() {
   // No control params left to adjust.
   if (indexes.empty() && stage_ == Stage::INITIAL) {
     // No adjustment required.
-    std::cout << "No adjustment required" << std::endl;
     return;
   }
 
   // Now twiddle the control params to attempt to reduce the error.
   if (stage_ == Stage::INITIAL) {
-    current_parameter_ = indexes.front();
-    indexes.pop_front();
+    do {
+      if (indexes.empty()) {
+        std::cout << "No adjustment required" << std::endl;
+        return;
+      }
+      current_parameter_ = indexes.front();
+      indexes.pop_front();}
+    while (dp_[current_parameter_] < 0.000001);
   }
 
   if (sample_quadratic_error_ < best_quadratic_error_) {
     // Improvement - widen the search slightly.
-    std::cout << "+++++++++ :Improvement " << std::endl;
+    std::cout << "+++++ :Improvement of " << best_quadratic_error_ -  sample_quadratic_error_ << std::endl;
+
     best_quadratic_error_ = sample_quadratic_error_;
     dp_[current_parameter_] *= 1.1;
     switch (stage_) {
@@ -132,27 +141,22 @@ void PID::TwiddleParams() {
         break;
     }
   }
-
-  std::cout << "<<<<<<<< TwiddleParams - End" << std::endl;
-  DebugPrint();
-  std::cout << "---------------------" << std::endl;
-
   // Rest the error for the next iteration.
 
   sample_quadratic_error_ = 0.0;
 }
 
 void PID::DebugPrint() {
-  std::cout.setf(std::ios_base::fixed);
+//  std::cout.setf(std::ios_base::fixed);
   // clang-format off
   std::cout << name_
             << ",uc:" << update_count_
             << "," << current_parameter_
             << ":" << StageToString(stage_)
-//             << ",pe:" << p_error_
-//             << ",ie:" << i_error_
-//             << ",de:" << d_error_
-             << ",te:" << current_error_
+            << ",pe:" << p_error_
+            << ",ie:" << i_error_
+            << ",de:" << d_error_
+            << ",te:" << current_error_
             << ",sqe:" << sample_quadratic_error_
             << ",bqe:" << best_quadratic_error_
             << ",p:[" << control_params_[0]

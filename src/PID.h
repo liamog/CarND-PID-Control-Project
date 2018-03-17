@@ -78,7 +78,7 @@ private:
   bool twiddle_ = false;
   // Need a sufficiently large sample to cover most of the track so we have sharp turns
   // captured in the average cost. The downside is it takes longer to run.
-  int sample_size_ = 5000;
+  int sample_size_ = 10000;
   int update_count_ = 0;
   double best_quadratic_error_ = std::numeric_limits<double>::infinity();
   double sample_quadratic_error_ = 0.0;

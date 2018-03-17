@@ -34,7 +34,7 @@ int main() {
   uWS::Hub h;
 
   PID pid_steering("Steering");
-  pid_steering.SetControlParamsWithTwiddle(/*p=*/0.2, /*i=*/0.001, /*d=*/12.0,
+  pid_steering.SetControlParamsWithTwiddle(/*p=*/0.3, /*i=*/0.001, /*d=*/12.0,
                                 /*delta_Kp=*/ 0.1, /*delta_Ki=*/ 0.0001, /*delta_Kd=*/ 1.0);
 
   PID pid_speed("Speed");
