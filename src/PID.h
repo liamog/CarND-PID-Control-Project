@@ -24,6 +24,10 @@ class PID {
   */
   void SetControlParams(double Kp, double Ki, double Kd);
 
+  void SetControlParamsWithTwiddle(double Kp, double Ki, double Kd,
+                                        double delta_Kp, double delta_Ki,
+                                        double delta_Kd);
+
   /*
   * Update the PID error variables given cross track error.
   */
@@ -35,10 +39,23 @@ class PID {
   double TotalError();
 
   double best_error() {return best_quadratic_error_;}
-  void EnableTwiddle() {twiddle_ = true;}
 
   void DebugPrint();
 private:
+  enum class Stage {
+    INITIAL =0,
+    HIGHER = 1,
+    LOWER = 2
+  };
+
+  std::string StageToString(Stage stage) {
+    switch(stage) {
+      case Stage::INITIAL: return "Initial";
+      case Stage::HIGHER: return "Higher";
+      case Stage::LOWER: return "Lower";
+    }
+  }
+
   void CalculateError();
   void TwiddleParams();
 
@@ -59,16 +76,16 @@ private:
 
   // Twiddle params
   bool twiddle_ = false;
-  int sample_size_ = 100;
+  // Need a sufficiently large sample to cover most of the track so we have sharp turns
+  // captured in the average cost. The downside is it takes longer to run.
+  int sample_size_ = 5000;
   int update_count_ = 0;
   double best_quadratic_error_ = std::numeric_limits<double>::infinity();
   double sample_quadratic_error_ = 0.0;
-  double tolerance_threshold_ = 0.0001;
-  double current_tolerance_ = std::numeric_limits<double>::infinity();
   std::vector<double> dp_ = {0.1, 0.0, 0.0};
   int current_parameter_ = 0;
-  bool first_run_ = true;
   std::list<int> indexes = {0 , 1, 2};
+  Stage stage_ = Stage::INITIAL;
 };
 
 #endif /* PID_H */
