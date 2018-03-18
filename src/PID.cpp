@@ -54,9 +54,6 @@ void PID::CalculateError() {
   update_count_++;
   int sample_count = update_count_ % sample_size_;
 
-  sample_quadratic_error_ += current_error_ * current_error_;
-  sample_quadratic_error_ /= sample_count + 1;
-
   if (twiddle_ && sample_count == 0) {
     // Adjust the control parameters looking for an improvement.
 
@@ -67,6 +64,11 @@ void PID::CalculateError() {
     std::cout << "After Twiddle ---------------------" << std::endl;
     DebugPrint();
     std::cout << "---------------------" << std::endl << std::endl;
+  }
+  if (sample_count > 100 ) {
+    double count = (sample_count - 100);
+    total_sample_quadratic_error_ += (current_error_ * current_error_);
+    sample_quadratic_error_ = total_sample_quadratic_error_ / count;
   }
 }
 
@@ -142,8 +144,7 @@ void PID::TwiddleParams() {
     }
   }
   // Rest the error for the next iteration.
-
-  sample_quadratic_error_ = 0.0;
+  total_sample_quadratic_error_ = 0.0;
 }
 
 void PID::DebugPrint() {
@@ -153,13 +154,14 @@ void PID::DebugPrint() {
             << ",uc:" << update_count_
             << "," << current_parameter_
             << ":" << StageToString(stage_)
-            << ",pe:" << p_error_
+            << "|pe:" << p_error_
             << ",ie:" << i_error_
             << ",de:" << d_error_
             << ",te:" << current_error_
+            << "|tsqe:"<<  total_sample_quadratic_error_
             << ",sqe:" << sample_quadratic_error_
             << ",bqe:" << best_quadratic_error_
-            << ",p:[" << control_params_[0]
+            << "|p:[" << control_params_[0]
             << "," << control_params_[1]
             << "," << control_params_[2]
             << "],dp_:[" << dp_[0]

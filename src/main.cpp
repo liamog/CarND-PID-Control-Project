@@ -34,8 +34,21 @@ int main() {
   uWS::Hub h;
 
   PID pid_steering("Steering");
-  pid_steering.SetControlParamsWithTwiddle(/*p=*/0.3, /*i=*/0.001, /*d=*/12.0,
-                                /*delta_Kp=*/ 0.1, /*delta_Ki=*/ 0.0001, /*delta_Kd=*/ 1.0);
+  pid_steering.SetControlParamsWithTwiddle(
+      /*p=*/0.405, /*i=*/0.0005, /*d=*/11.0,
+      /*delta_Kp=*/0.05, /*delta_Ki=*/0.0001, /*delta_Kd=*/1.0);
+
+  // P only
+  //  pid_steering.SetControlParams(/*p=*/0.6, /*i=*/0.0, /*d=*/0.0);
+
+  // P + D
+  //  pid_steering.SetControlParams(/*p=*/0.6, /*i=*/0.0, /*d=*/12.0);
+
+  //  P + I + D
+  //  pid_steering.SetControlParams(/*p=*/0.2, /*i=*/0.002, /*d=*/50.0);
+
+  // 0.4801,0.00154509,83.1
+  //  pid_steering.SetControlParams(/*p=*/0.4801, /*i=*/0.00154509, /*d=*/83.1);
 
   PID pid_speed("Speed");
   pid_speed.SetControlParams(/*p=*/0.4, /*i=*/0.0, /*d=*/5.0);
@@ -44,9 +57,8 @@ int main() {
 
   int count = 0;
 
-  h.onMessage([&](
-      uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
-      uWS::OpCode opCode) {
+  h.onMessage([&](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+                  uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -59,7 +71,8 @@ int main() {
           // j[1] is the data JSON object
           double cte = std::stod(j[1]["cte"].get<std::string>());
           double speed = std::stod(j[1]["speed"].get<std::string>());
-//          double angle = std::stod(j[1]["steering_angle"].get<std::string>());
+          //          double angle =
+          //          std::stod(j[1]["steering_angle"].get<std::string>());
           count++;
           pid_steering.UpdateError(cte);
           double pid_error = pid_steering.TotalError();
@@ -71,7 +84,7 @@ int main() {
 
           double speed_error = target_speed - speed;
           pid_speed.UpdateError(speed_error);
-          double throttle =  - pid_speed.TotalError();
+          double throttle = -pid_speed.TotalError();
           throttle = std::min<double>(throttle, 0.3);
           throttle = std::max<double>(throttle, -0.3);
 

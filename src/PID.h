@@ -82,6 +82,7 @@ private:
   int update_count_ = 0;
   double best_quadratic_error_ = std::numeric_limits<double>::infinity();
   double sample_quadratic_error_ = 0.0;
+  double total_sample_quadratic_error_ = 0.0;
   std::vector<double> dp_ = {0.1, 0.0, 0.0};
   int current_parameter_ = 0;
   std::list<int> indexes = {0 , 1, 2};
