@@ -34,25 +34,25 @@ int main() {
   uWS::Hub h;
 
   PID pid_steering("Steering");
-  0.302077,0.0006,10.0615
+  // 0.2005,0.001405,0.02
   pid_steering.SetControlParamsWithTwiddle(
-      /*p=*/0.302077, /*i=*/0.0006, /*d=*/10.0615,
-      /*delta_Kp=*/0.05, /*delta_Ki=*/0.0001, /*delta_Kd=*/1.0);
+      /*p=*/0.2005, /*i=*/0.001405, /*d=*/.02,
+      /*delta_Kp=*/0.05, /*delta_Ki=*/0.0005, /*delta_Kd=*/0.005);
 
   // P only
-  //  pid_steering.SetControlParams(/*p=*/0.6, /*i=*/0.0, /*d=*/0.0);
+  // pid_steering.SetControlParams(/*p=*/0.3, /*i=*/0.0, /*d=*/0.0);
 
   // P + D
-  //  pid_steering.SetControlParams(/*p=*/0.6, /*i=*/0.0, /*d=*/12.0);
+  // pid_steering.SetControlParams(/*p=*/0.3, /*i=*/0.0, /*d=*/0.01);
 
-  //  P + I + D
-  //  pid_steering.SetControlParams(/*p=*/0.2, /*i=*/0.002, /*d=*/50.0);
+  // P + I + D
+  // pid_steering.SetControlParams(/*p=*/0.2, /*i=*/0.001, /*d=*/0.02);
 
   // 0.4801,0.00154509,83.1
   //  pid_steering.SetControlParams(/*p=*/0.4801, /*i=*/0.00154509, /*d=*/83.1);
 
   PID pid_speed("Speed");
-  pid_speed.SetControlParams(/*p=*/0.4, /*i=*/0.0, /*d=*/5.0);
+  pid_speed.SetControlParams(/*p=*/0.4, /*i=*/0.0, /*d=*/0.01);
 
   double target_speed = 30.00;
 

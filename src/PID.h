@@ -1,10 +1,12 @@
 #ifndef PID_H
 #define PID_H
 
+#include <fstream>
 #include <limits>
 #include <list>
 #include <string>
 #include <vector>
+#include <ctime>
 
 class PID {
 
@@ -55,7 +57,7 @@ private:
       case Stage::LOWER: return "Lower";
     }
   }
-
+  void CreateCTEFile();
   void CalculateError();
   void TwiddleParams();
 
@@ -69,10 +71,11 @@ private:
   // Parameters
   std::vector<double> control_params_ = { 0.0, 0.0, 0.0 };
 
-  double current_error_ = 0.0;
+  double total_error_ = 0.0;
 
   bool first_update_ = true;
   double prev_cte_ = 0.0;
+  clock_t  prev_time_;
 
   // Twiddle params
   bool twiddle_ = false;
@@ -87,6 +90,7 @@ private:
   int current_parameter_ = 0;
   std::list<int> indexes = {0 , 1, 2};
   Stage stage_ = Stage::INITIAL;
+  std::fstream fs_;
 };
 
 #endif /* PID_H */
