@@ -31,12 +31,27 @@ void PID::SetControlParamsWithTwiddle(double Kp, double Ki, double Kd,
 }
 
 void PID::CreateCTEFile() {
-  char has_p = (control_params_[0] > 0.0 ? 'P' : '_');
-  char has_i = (control_params_[1] > 0.0 ? 'I' : '_');
-  char has_d = (control_params_[2] > 0.0 ? 'D' : '_');
+  std::stringstream  has_p;
+  std::stringstream  has_i;
+  std::stringstream  has_d;
+  if (control_params_[0] > 0.0) {
+    has_p << 'P' << control_params_[0] << "_";
+  } else {
+    has_p << "_";
+  }
+  if (control_params_[1] > 0.0) {
+    has_p << 'I' << control_params_[1] << "_";
+  } else {
+    has_p << "_";
+  }
+  if (control_params_[2] > 0.0) {
+    has_p << 'D' << control_params_[2] << "_";
+  } else {
+    has_p << "_";
+  }
 
   std::stringstream file_name;
-  file_name << name_ << has_p << has_i << has_d << "_cte.csv";
+  file_name << name_ << has_p.str() << has_i.str() << has_d.str() << "_cte.csv";
   fs_.open(file_name.str().c_str(),
            std::fstream::out | std::fstream::trunc | std::ios::binary);
   fs_.setf(std::ios_base::fixed);
